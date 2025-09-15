@@ -30,19 +30,12 @@
 3.2 [Нефункциональные требования](#non-functional_requirements)  
 3.2.1 [Атрибуты качества](#quality_attributes)  
 3.2.1.1 [Требования к удобству использования](#requirements_for_ease_of_use)
-
 3.2.1.2 [Требования к безопасности](#security_requirements)  
-
 3.2.1.3 [Требования к производительности](#performance_requirements)
-
 3.2.1.4 [Требования к надежности](#reliability_requirements)
-
 3.2.1.5 [Требования к сопровождаемости](#maintainability_requirements)
-
 3.2.1.6 [Требования к масштабируемости](#scalability_requirements)
-
 3.2.2 [Внешние интерфейсы](#external_interfaces)  
-
 3.2.3 [Ограничения](#restrictions_nfr)  
 
 <a name="intro"/>
