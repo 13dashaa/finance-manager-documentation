@@ -1,0 +1,222 @@
+<h2>Цели</h2>
+
+<div *ngIf="errorMessage && !isLoading" class="error-message">
+  Error: {{ errorMessage }}
+</div>
+
+<div *ngIf="isLoading" class="loading-indicator">Loading goals...</div>
+<div *ngIf="isLoadingClients && !isLoading" class="loading-indicator">Loading client list for form...</div>
+<div *ngIf="!showAddEditForm && !isLoading" class="controls mb-3 d-flex justify-content-between align-items-center"> <!-- Filter left, Button right -->
+<div class="filter-container d-flex align-items-center">
+  <label for="client-filter" class="form-label me-2 mb-0">Filter:</label>
+  <select id="client-filter" class="form-select form-select-sm w-auto"
+          [disabled]="isLoadingClients || isLoading"
+          (change)="onClientFilterChange($event)">
+    <option value="null" [selected]="selectedClientIdFilter === null">-- Все клиенты --</option>
+    <option *ngIf="isLoadingClients" disabled>Loading clients...</option>
+    <ng-container *ngIf="!isLoadingClients">
+      <option *ngFor="let client of clients; trackBy: trackById" [value]="client.id" [selected]="selectedClientIdFilter === client.id">
+        {{ client.username }} (ID: {{ client.id }})
+      </option>
+    </ng-container>
+  </select>
+  <div *ngIf="isLoadingClients" class="spinner-border spinner-border-sm text-secondary ms-2">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <span *ngIf="clientLoadErrorMessage && !isLoadingClients" class="text-danger small ms-2">
+        ⚠️ <button type="button" (click)="loadClientsForDropdown()" class="btn btn-sm btn-link p-0 m-0 align-baseline text-danger">Reload Clients</button>
+     </span>
+</div>
+
+<div>
+  <button (click)="openAddForm()" class="add-button btn btn-primary" [disabled]="isLoadingClients">
+    <span *ngIf="!isLoadingClients">Добавить цель</span>
+    <span *ngIf="isLoadingClients" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+    <span *ngIf="isLoadingClients">Loading Clients...</span>
+  </button>
+</div>
+</div>
+
+<div *ngIf="showAddEditForm" class="add-form-container card">
+  <h5 class="card-header">
+    {{ isEditMode ? 'Edit Goal (ID: ' + currentGoalId + ')' : 'Add New Goal' }}
+  </h5>
+  <form (ngSubmit)="onSubmit()" [formGroup]="goalForm" class="card-body">
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="goal-name">Название цели</label>
+      <div class="input-group">
+      <input [class.is-invalid]="goalForm.get('name')?.invalid && goalForm.get('name')?.touched"
+             class="form-control w-100"
+             formControlName="name"
+             maxlength="100"
+             id="goal-name"
+             required
+             type="text">
+      </div>
+      <div *ngIf="goalForm.get('name')?.errors?.['required'] && goalForm.get('name')?.touched"
+           class="invalid-feedback">
+        Goal name is required.
+      </div>
+      <div *ngIf="goalForm.get('name')?.errors?.['maxlength'] && goalForm.get('name')?.touched"
+           class="invalid-feedback">
+        Name cannot exceed 100 characters.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="target-amount">Целевая сумма</label>
+      <div class="input-group">
+        <span class="input-group-text">$</span>
+        <input [class.is-invalid]="goalForm.get('targetAmount')?.invalid && goalForm.get('targetAmount')?.touched"
+               class="form-control w-100"
+               formControlName="targetAmount"
+               id="target-amount"
+               min="0.01"
+               required
+               step="0.01"
+               type="number">
+      </div>
+      <div *ngIf="goalForm.get('targetAmount')?.errors?.['required'] && goalForm.get('targetAmount')?.touched"
+           class="invalid-feedback d-block">
+        Target amount is required.
+      </div>
+      <div *ngIf="goalForm.get('targetAmount')?.errors?.['min'] && goalForm.get('targetAmount')?.touched"
+           class="invalid-feedback d-block">
+        Target amount must be positive.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="client-filter">Клиент</label>
+
+      <div *ngIf="isEditMode" class="form-control-static bg-light p-2 rounded">
+        <strong>{{ getClientName(goalForm.get('clientId')?.value) }}</strong>
+        <input type="hidden" formControlName="clientId">
+      </div>
+
+      <select *ngIf="!isEditMode"
+              [attr.disabled]="isLoadingClients ? true : null"
+              [class.is-invalid]="goalForm.get('clientId')?.invalid && goalForm.get('clientId')?.touched"
+              class="form-select w-100"
+              formControlName="clientId"
+              id="client-id"
+              required>
+        <option [ngValue]="null" disabled>{{ isLoadingClients ? 'Loading clients...' : 'Select a Client' }}</option>
+        <option *ngFor="let client of clients" [ngValue]="client.id">
+          {{ client.username }}
+        </option>
+      </select>
+
+      <div *ngIf="goalForm.get('clientId')?.errors?.['required'] && goalForm.get('clientId')?.touched"
+           class="invalid-feedback">
+        Selecting a client is required.
+      </div>
+      <div *ngIf="!isLoadingClients && clients.length === 0" class="form-text text-warning">
+        No clients available to assign the goal to. Please add clients first.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="start-date">Дата начала</label>
+      <div class="input-group">
+      <input [class.is-invalid]="goalForm.get('startDate')?.invalid && goalForm.get('startDate')?.touched"
+             class="form-control w-100"
+             formControlName="startDate"
+             id="start-date"
+             type="date">
+    </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="end-date">Конечная дата</label>
+      <div class="input-group">
+      <input [class.is-invalid]="goalForm.get('endDate')?.invalid && goalForm.get('endDate')?.touched"
+             class="form-control w-100"
+             formControlName="endDate"
+             id="end-date"
+             required
+             type="date">
+        </div>
+      <div *ngIf="goalForm.get('endDate')?.errors?.['required'] && goalForm.get('endDate')?.touched"
+           class="invalid-feedback">
+        End date is required.
+      </div>
+      <div *ngIf="goalForm.get('endDate')?.errors?.['futureDate'] && goalForm.get('endDate')?.touched"
+           class="invalid-feedback">
+        End date must be in the future.
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage && (goalForm.touched || goalForm.dirty)" class="error-message mb-3">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-actions mt-3 d-flex">
+      <button [disabled]="goalForm.invalid || isLoading || isLoadingClients"
+              class="btn btn-success"
+              type="submit">
+        {{ isLoading ? 'Saving...' : (isEditMode ? 'Обновить' : 'Сохранить') }}
+      </button>
+      <button (click)="cancelForm()" [disabled]="isLoading"
+              class="btn btn-secondary ms-2"
+              type="button">
+        Отменить
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<div *ngIf="!isLoading && goals.length > 0 && !showAddEditForm" class="table-container card mt-3">
+  <table class="clients-table table table-striped table-hover">
+    <thead>
+    <tr>
+      <th>Название</th>
+      <th>Клиент</th>
+      <th>Цель</th>
+      <th>Текущее</th>
+      <th>Прогресс</th>
+      <th>Дата начала</th>
+      <th>Дата окончания</th>
+      <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let goal of goals; trackBy: trackById">
+
+      <td>{{ goal.name }}</td>
+      <td>
+        <a [routerLink]="['/clients', goal.clientId]" title="View details for {{ goal.clientUsername }}">
+          {{ goal.clientUsername }}
+        </a>
+      </td>
+      <td>{{ goal.targetAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+      <td>{{ goal.currentAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+      <td>
+        <progress [max]="goal.targetAmount" [value]="goal.currentAmount" style="width: 100%;"></progress>
+        <span class="small d-block text-center">
+              {{ (goal.currentAmount / goal.targetAmount) * 100 | number:'1.0-1' }}%
+          </span>
+      </td>
+      <td>{{ goal.startDate | date:'yyyy-MM-dd' }}</td>
+      <td>{{ goal.endDate | date:'yyyy-MM-dd' }}</td>
+      <td>
+        <button (click)="openEditForm(goal)" [disabled]="isLoading" class="action-button edit" title="Edit Goal">✏️
+        </button>
+        <button (click)="deleteGoal(goal.id, goal.name)" [disabled]="isLoading" class="action-button delete"
+                title="Delete Goal">
+          🗑️
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!isLoading && goals.length === 0 && !errorMessage && !showAddEditForm" class="no-data-message mt-3">
+  <p>No financial goals found.</p>
+  <p *ngIf="!isLoadingClients">Вы можете <a (click)="$event.preventDefault(); openAddForm()" href="#">добавить цель</a>.
+  </p>
+  <p *ngIf="isLoadingClients">(Loading client list...)</p>
+</div>

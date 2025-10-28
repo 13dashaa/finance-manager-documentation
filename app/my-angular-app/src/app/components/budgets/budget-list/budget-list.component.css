@@ -1,0 +1,7 @@
+.controls {
+  justify-content: flex-end;
+}
+
+.me-1 {
+  margin-right: .25rem !important;
+}

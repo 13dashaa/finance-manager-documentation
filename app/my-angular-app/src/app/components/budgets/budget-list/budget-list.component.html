@@ -1,0 +1,164 @@
+<h2>Лимиты (бюджеты)</h2>
+
+<div *ngIf="errorMessage && !isLoading && !showAddEditForm" class="alert alert-danger mb-3">
+  {{ errorMessage }}
+</div>
+
+<div *ngIf="isLoading && !showAddEditForm" class="loading-indicator alert alert-info">Loading budgets...</div>
+
+<div *ngIf="!showAddEditForm && !isLoading" class="controls mb-3 d-flex justify-content-end align-items-center"> <!-- Кнопка справа -->
+  <div>
+    <button (click)="openAddForm()" class="add-button btn btn-primary" [disabled]="isLoadingClients || isLoadingCategories">
+      <span *ngIf="!isLoadingClients && !isLoadingCategories">Добавить бюджет</span>
+      <span *ngIf="isLoadingClients || isLoadingCategories" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+      <span *ngIf="isLoadingClients || isLoadingCategories">Loading Form Data...</span>
+    </button>
+    <span *ngIf="(clientLoadErrorMessage || categoryLoadErrorMessage) && !(isLoadingClients || isLoadingCategories)" class="text-danger small ms-2">
+           ⚠️ Error loading form data. <button type="button" (click)="loadInitialData()" class="btn btn-sm btn-link p-0 m-0 align-baseline">Retry All</button>
+     </span>
+  </div>
+</div>
+
+<div *ngIf="showAddEditForm" class="add-form-container card">
+  <h5 class="card-header">
+    {{ isEditMode ? 'Edit Budget (ID: ' + currentBudgetId + ')' : 'Add New Budget' }}
+  </h5>
+
+  <form (ngSubmit)="onSubmit()" [formGroup]="budgetForm" class="card-body" novalidate>
+
+    <div class="form-group mb-3">
+      <label for="budget-category" class="form-label">Категория <span class="text-danger">*</span></label>
+      <select id="budget-category"
+              class="form-select"
+              formControlName="categoryId"
+              [class.is-invalid]="budgetForm.get('categoryId')?.invalid && budgetForm.get('categoryId')?.touched"
+              [disabled]="isEditMode || isLoadingCategories || (categories.length === 0 && !categoryLoadErrorMessage)">
+        <option [ngValue]="null" disabled>
+          {{ isLoadingCategories ? 'Loading...' : (categories.length === 0 ? 'No categories' : '-- Select Category --') }}
+        </option>
+        <option *ngFor="let category of categories" [ngValue]="category.id">{{ category.name }}</option>
+      </select>
+      <div class="invalid-feedback d-block" *ngIf="budgetForm.get('categoryId')?.touched && budgetForm.get('categoryId')?.invalid">
+        Category is required.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="budget-limitation" class="form-label">Количество <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <span class="input-group-text">$</span>
+        <input type="number"
+               id="budget-limitation"
+               class="form-control"
+               formControlName="limitation"
+               placeholder="1000.00"
+               required min="0.01" step="0.01"
+               [class.is-invalid]="budgetForm.get('limitation')?.invalid && budgetForm.get('limitation')?.touched">
+      </div>
+      <div class="invalid-feedback d-block" *ngIf="budgetForm.get('limitation')?.touched">
+        <ng-container *ngIf="budgetForm.get('limitation')?.errors?.['required']">
+          Limit is required.
+        </ng-container>
+        <ng-container *ngIf="budgetForm.get('limitation')?.errors?.['min']">
+          Must be at least {{ budgetForm.get('limitation')?.errors?.['min'].min | currency }}.
+        </ng-container>
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="budget-period" class="form-label">Период (в днях) <span class="text-danger">*</span></label>
+      <div class="input-group">
+      <input type="number"
+             id="budget-period"
+             class="form-control"
+             formControlName="period"
+             placeholder="30"
+             min="1"
+             [class.is-invalid]="budgetForm.get('period')?.invalid && budgetForm.get('period')?.touched">
+      </div>
+      <div class="invalid-feedback d-block" *ngIf="budgetForm.get('period')?.touched">
+        <ng-container *ngIf="budgetForm.get('period')?.errors?.['required']">Period is required.</ng-container>
+        <ng-container *ngIf="budgetForm.get('period')?.errors?.['min']">Min value: {{ budgetForm.get('period')?.errors?.['min'].min }}.</ng-container>
+      </div>
+      <small class="form-text text-muted">E.g. 30 for monthly, 7 for weekly</small>
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="budget-clients" class="form-label">Связвнные клиенты <span class="text-danger">*</span></label>
+      <select id="budget-clients"
+              class="form-select"
+              multiple
+              [size]="clients.length > 5 ? 5 : clients.length + 1"
+              (change)="onClientSelectionChange($event)"
+              [disabled]="isLoadingClients || (clients.length === 0 && !clientLoadErrorMessage)"
+              [class.is-invalid]="clientIdsFormArray.invalid && clientIdsFormArray.touched">
+        <option *ngIf="isLoadingClients" disabled>Loading clients...</option>
+        <ng-container *ngIf="!isLoadingClients">
+          <option *ngFor="let client of clients"
+                  [value]="client.id"
+                  [selected]="isClientSelected(client.id)">
+            {{ client.username }}
+          </option>
+        </ng-container>
+      </select>
+      <div class="invalid-feedback d-block" *ngIf="clientIdsFormArray.touched && clientIdsFormArray.invalid">
+        At least one client is required.
+      </div>
+      <small class="form-text text-muted">Use Ctrl/Cmd to select multiple</small>
+    </div>
+
+    <div *ngIf="formErrorMessage && !isSubmitting" class="alert alert-danger mb-3">
+      {{ formErrorMessage }}
+    </div>
+
+    <div class="form-actions border-top pt-3 mt-3">
+      <button type="submit"
+              class="btn btn-success"
+              [disabled]="budgetForm.invalid || isSubmitting || isLoadingClients || isLoadingCategories">
+        <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1"></span>
+        {{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update Budget' : 'Save Budget') }}
+      </button>
+      <button type="button"
+              class="btn btn-secondary ms-2"
+              (click)="cancelForm()"
+              [disabled]="isSubmitting">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>
+
+<div *ngIf="!showAddEditForm && !isLoading" class="table-responsive mt-3">
+  <div *ngIf="budgets.length > 0" class="card">
+    <table class="clients-table table table-striped table-hover mb-0">
+      <thead class="table-light">
+      <tr>
+        <th scope="col">Категория</th>
+        <th scope="col">Связанные клиенты</th>
+        <th scope="col">Детали</th>
+        <th scope="col" class="text-center">Действия</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let budget of budgets; trackBy: trackById">
+        <td>{{ budget.categoryName }}</td>
+        <td>{{ formatClientUsernames(budget.clientUsernames ? Array.from(budget.clientUsernames) : []) }}</td>
+        <td><a [routerLink]="['/budgets', budget.id]" title="View details">
+          Details
+        </a></td>
+        <td class="text-center">
+          <button (click)="openEditForm(budget)" [disabled]="isLoading" class="action-button edit btn btn-sm btn-outline-secondary me-1" title="Edit Budget">✏️</button>
+          <button (click)="deleteBudget(budget.id, budget.categoryName)" [disabled]="isLoading" class="action-button delete btn btn-sm btn-outline-danger" title="Delete Budget">🗑️</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<div *ngIf="!isLoading && budgets.length === 0 && !errorMessage && !showAddEditForm" class="no-data-message alert alert-secondary mt-3 text-center">
+  <p class="mb-1">Не найдены бюджеты.</p>
+  <p *ngIf="!isLoadingClients && !isLoadingCategories">
+    You can <a href="#" (click)="$event.preventDefault(); openAddForm()">add a new budget</a>.
+  </p>
+  <p *ngIf="isLoadingClients || isLoadingCategories">(Cannot add budget until client/category list is loaded)</p>
+</div>

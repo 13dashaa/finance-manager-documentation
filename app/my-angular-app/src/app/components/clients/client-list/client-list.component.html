@@ -1,0 +1,145 @@
+<h2>Клиенты</h2>
+
+<div *ngIf="errorMessage && !isLoading" class="error-message">
+  Error: {{ errorMessage }}
+</div>
+
+<div *ngIf="isLoading" class="loading-indicator">Loading clients...</div>
+
+<div *ngIf="!showAddEditForm" class="controls">
+  <button (click)="openAddForm()" class="add-button">
+    Добавить клиента
+  </button>
+</div>
+
+<div *ngIf="showAddEditForm" class="add-form-container card">
+  <h5 class="card-header">
+    {{ isEditMode ? 'Edit Client (ID: ' + currentClientId + ')' : 'Add New Client' }}
+  </h5>
+
+  <form (ngSubmit)="onSubmit()" [formGroup]="clientForm" class="card-body" novalidate>
+
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="username">Username <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="text"
+               id="username"
+               formControlName="username"
+               required
+               class="form-control w-100"
+               [class.is-invalid]="clientForm.get('username')?.invalid && clientForm.get('username')?.touched" />
+      </div>
+      <div *ngIf="clientForm.get('username')?.errors?.['required'] && clientForm.get('username')?.touched"
+           class="invalid-feedback d-block">
+        Username is required.
+      </div>
+      <div *ngIf="clientForm.get('username')?.errors?.['pattern'] && clientForm.get('username')?.touched"
+           class="invalid-feedback d-block">
+        Username cannot contain spaces.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="email">Email <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="email"
+               id="email"
+               formControlName="email"
+               required
+               [readOnly]="isEditMode"
+               class="form-control w-100"
+               [class.is-invalid]="clientForm.get('email')?.invalid && clientForm.get('email')?.touched" />
+      </div>
+      <small *ngIf="isEditMode" class="form-text text-muted">Email cannot be changed after creation.</small>
+      <div *ngIf="clientForm.get('email')?.errors?.['required'] && clientForm.get('email')?.touched"
+           class="invalid-feedback d-block">
+        Email is required.
+      </div>
+      <div *ngIf="clientForm.get('email')?.errors?.['email'] && clientForm.get('email')?.touched"
+           class="invalid-feedback d-block">
+        Please enter a valid email address.
+      </div>
+    </div>
+
+    <div *ngIf="!isEditMode" class="form-group mb-3">
+      <label class="form-label" for="password">Пароль <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="password"
+               id="password"
+               formControlName="password"
+               required
+               class="form-control w-100"
+               [class.is-invalid]="clientForm.get('password')?.invalid && clientForm.get('password')?.touched" />
+      </div>
+      <div *ngIf="clientForm.get('password')?.errors?.['required'] && clientForm.get('password')?.touched"
+           class="invalid-feedback d-block">
+        Пароль обязателен.
+      </div>
+      <div *ngIf="clientForm.get('password')?.errors?.['minlength'] && clientForm.get('password')?.touched"
+           class="invalid-feedback d-block">
+        Пароль должен быть минимум 8 символов.
+      </div>
+      <div *ngIf="clientForm.get('password')?.errors?.['maxlength'] && clientForm.get('password')?.touched"
+           class="invalid-feedback d-block">
+        Password must be no more than 64 characters long.
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage && !isLoading" class="error-message alert alert-danger">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-actions border-top pt-3 mt-3">
+      <button type="submit"
+              class="btn btn-success"
+              [disabled]="clientForm.invalid || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        {{ isLoading ? 'Saving...' : (isEditMode ? 'Обновить' : 'Сохранить') }}
+      </button>
+      <button type="button"
+              class="btn btn-secondary ms-2"
+              (click)="cancelForm()"
+              [disabled]="isLoading">
+        Отменить
+      </button>
+    </div>
+
+  </form>
+</div>
+
+
+
+<div *ngIf="!isLoading && clients.length > 0 && !showAddEditForm" class="table-container">
+  <table class="clients-table">
+    <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Действия</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let client of clients; trackBy: trackById">
+      <td>
+        <a [routerLink]="['/clients', client.id]" title="View details for {{ client.username }}">
+          {{ client.username }}
+        </a>
+      </td>
+      <td>{{ client.email }}</td>
+      <td>
+        <button (click)="openEditForm(client)" [disabled]="isLoading" class="action-button edit" title="Edit">✏️
+        </button>
+        <button (click)="deleteClient(client.id)" [disabled]="isLoading" class="action-button delete" title="Delete">
+          🗑️
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!isLoading && clients.length === 0 && !errorMessage && !showAddEditForm" class="no-data-message">
+  <p>Нет клиентов.</p>
+  <p>You can <a (click)="$event.preventDefault(); openAddForm()" href="#">add a new client</a>.</p>
+</div>

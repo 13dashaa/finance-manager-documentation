@@ -1,0 +1,96 @@
+<div class="account-detail-container card">
+  <button (click)="goBack()" class="button-back mb-3">
+    ←
+  </button>
+
+  <div *ngIf="isLoading" class="loading-indicator">
+    Загрузка деталей...
+  </div>
+
+  <div *ngIf="errorMessage && !isLoading" class="error-message">
+    ⚠️ Error loading account: {{ errorMessage }}
+  </div>
+
+  <div *ngIf="account && !isLoading && !errorMessage">
+
+    <div class="account-header">
+      <div>
+        <h3 class="account-name">Счет: {{ account.name }}</h3>
+        <a [routerLink]="['/clients', account.clientId]" class="client-link">
+          {{ account.clientUsername }}
+        </a>
+      </div>
+      <div class="account-balance-summary">
+        <h4 [ngClass]="{'positive-amount': account.balance >= 0, 'negative-amount': account.balance < 0}">
+          {{ account.balance | currency:'USD':'symbol':'1.2-2' }}
+        </h4>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="account-meta">
+      <p><strong>Создан:</strong> {{ account.createdAt | date:'longDate' }}
+        ({{ account.createdAt | date:'shortTime' }})</p>
+      <p><strong>Последнее обновление:</strong> {{ account.updatedAt | date:'longDate' }}
+        ({{ account.updatedAt | date:'shortTime' }})</p>
+    </div>
+
+    <div *ngIf="account.transactionDescriptions && isAnArray(account.transactionDescriptions) && account.transactionDescriptions.length > 0" class="transaction-descriptions-section">
+      <p><strong>Описание перевода:</strong></p>
+      <ul class="description-list">
+        <li *ngFor="let desc of account.transactionDescriptions" class="description-item">
+          <span class="description-badge">{{ desc }}</span>
+        </li>
+      </ul>
+    </div>
+    <div *ngIf="!account.transactionDescriptions || !isAnArray(account.transactionDescriptions) || account.transactionDescriptions.length === 0" class="no-data-message"> <!-- Кастомный класс -->
+      <p>No sample transaction descriptions available.</p>
+    </div>
+
+    <hr>
+
+    <div class="transactions-section">
+      <h4 class="section-title">История переводов</h4>
+
+      <div *ngIf="isLoadingTransactions" class="loading-indicator">
+        Loading transactions...
+      </div>
+      <div *ngIf="transactionErrorMessage && !isLoadingTransactions" class="error-message warning">
+        ⚠️ {{ transactionErrorMessage }}
+        <span class="text-muted small"> (Перезагрузите страницу)</span>
+      </div>
+
+      <div *ngIf="!isLoadingTransactions && !transactionErrorMessage && transactions.length > 0"
+           class="table-container">
+        <table class="details-table">
+          <thead>
+          <tr>
+
+            <th>Дата</th>
+            <th>Описание</th>
+            <th class="text-right">Сумма</th>
+            <th>Категория</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let tx of transactions; trackBy: trackTransactionById">
+
+            <td>{{ tx.date | date:'yyyy-MM-dd HH:mm' }}</td>
+            <td>{{ tx.description }}</td>
+            <td class="text-right" [ngClass]="{'positive-amount': tx.amount > 0, 'negative-amount': tx.amount < 0}">
+              {{ tx.amount | currency:'USD':'symbol':'1.2-2' }}
+            </td>
+            <td>{{ tx.categoryName || 'N/A' }}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="!isLoadingTransactions && !transactionErrorMessage && transactions.length === 0"
+           class="no-data-message text-center">
+       Нет переводов на этом счете.
+      </div>
+    </div>
+  </div>
+</div>

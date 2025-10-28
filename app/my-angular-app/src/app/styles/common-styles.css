@@ -1,0 +1,265 @@
+h2 {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+/* --- Базовые стили Блока Управления (без justify-content) --- */
+/* Примечание: justify-content определяется в специфичных файлах */
+.controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap; /* Позволяет переносить элементы на новую строку */
+  gap: 10px; /* Расстояние между элементами */
+  /* margin-bottom заменяется Bootstrap mb-3 в HTML */
+}
+
+/* --- Кнопки --- */
+/* Общие стили для кнопок */
+button {
+  padding: 8px 15px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  font-size: 14px;
+}
+
+button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Основная кнопка */
+.add-button, button.button-primary {
+  background-color: #007bff; /* Цвет Bootstrap .btn-primary */
+  color: white;
+  border-color: #007bff;
+}
+
+.add-button:hover:not(:disabled), button.button-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Вторичная кнопка */
+button.button-secondary {
+  background-color: #6c757d; /* Цвет Bootstrap .btn-secondary */
+  color: white;
+  border-color: #6c757d;
+  /* margin-left заменяется Bootstrap ms-2 в HTML */
+}
+
+button.button-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+  border-color: #545b62;
+}
+
+/* Кнопки действий в таблице */
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em; /* Размер иконки */
+  margin: 0 2px; /* Небольшой отступ между кнопками */
+  padding: 0.1rem 0.3rem; /* Компактный паддинг */
+  line-height: 1;
+  vertical-align: middle;
+  /* Цвет иконки теперь берется из .btn-outline-* или утилитарных классов */
+  color: inherit;
+}
+
+.action-button:hover:not(:disabled) {
+  opacity: 0.7;
+}
+
+.action-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Индикаторы и Сообщения --- */
+/* Стили могут браться из Bootstrap .alert, .alert-danger, .alert-info, .alert-secondary */
+/* Применяем white-space ко всем для единообразия */
+.loading-indicator, .error-message, .no-data-message {
+  /* margin и padding определяются классами Bootstrap .alert и отступами (mb-3/mt-3) в HTML */
+  white-space: pre-wrap; /* Сохраняет переносы строк */
+}
+
+.no-data-message p {
+  margin-bottom: 5px;
+}
+
+.no-data-message a {
+  color: #007bff; /* Цвет как у Bootstrap .alert-link */
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.no-data-message a:hover {
+  text-decoration: underline;
+}
+
+/* --- Форма Добавления/Редактирования --- */
+.add-form-container {
+  /* Используются стили Bootstrap .card */
+  /* Если Bootstrap не глобален, стили .card нужно добавить сюда */
+}
+
+/* Сообщения об ошибках валидации */
+.invalid-feedback {
+  width: 100%;
+  margin-top: .25rem;
+  font-size: .875em;
+  color: #dc3545; /* Цвет ошибки Bootstrap */
+}
+
+/* Показ сообщений при невалидности и "касании" поля */
+.form-control.is-invalid ~ .invalid-feedback,
+.form-select.is-invalid ~ .invalid-feedback,
+.input-group .form-control.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+
+/* Для сообщений внутри .input-group (дублирование для уверенности) */
+.input-group .invalid-feedback.d-block {
+  display: block !important;
+}
+
+/* Кнопки внутри формы */
+.form-actions {
+  /* margin-top заменяется Bootstrap mt-3 в HTML */
+  display: flex;
+  justify-content: flex-start; /* Кнопки формы слева */
+  gap: 0.5rem; /* Расстояние между кнопками формы */
+}
+
+/* --- Таблица --- */
+.table-container {
+  overflow-x: auto; /* Горизонтальная прокрутка для маленьких экранов */
+  /* margin-top заменяется Bootstrap mt-3 в HTML */
+}
+
+/* Общий класс для таблиц */
+.clients-table {
+  width: 100%;
+  border-collapse: collapse; /* Схлопывание рамок */
+  margin-top: 0; /* Отступ у контейнера .card или .table-container */
+}
+
+.clients-table th, .clients-table td {
+  padding: 0.75rem; /* Стандартный паддинг Bootstrap для таблиц */
+  text-align: left;
+  border: 1px solid #dee2e6; /* Границы строк и столбцов */
+  vertical-align: middle; /* Вертикальное выравнивание по центру */
+}
+.clients-table thead th {
+  background-color: #f8f9fa; /* Темнее фон шапки */
+  font-weight: 600;
+  white-space: nowrap;
+  color: #343a40; /* Цвет текста */
+}
+.button-back {
+  max-width: 50px;
+  background-color: rgba(154, 158, 158, 0.84);
+}
+.clients-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+.clients-table th {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.text-muted { color: #6c757d !important; }
+.small { font-size: .875em; }
+.ms-2 { margin-left: .5rem !important; }
+.me-3 { margin-right: 1rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.d-block { display: block !important; }
+.justify-content-start { justify-content: flex-start !important; }
+.justify-content-between { justify-content: space-between !important; }
+.align-items-center { align-items: center !important; }
+.text-center { text-align: center !important; }
+.text-end { text-align: right !important; }
+.text-warning { color: #ffc107 !important; }
+.text-danger { color: #dc3545 !important; }
+.w-auto { width: auto !important; }
+
+.card {
+  position: relative; display: flex; flex-direction: column;
+  min-width: 0; word-wrap: break-word; background-color: #fff;
+  background-clip: border-box; border: 1px solid rgba(0, 0, 0, .125);
+  border-radius: .25rem;
+}
+.card-header {
+  padding: .5rem 1rem; margin-bottom: 0; background-color: rgba(0, 0, 0, .03);
+  border-bottom: 1px solid rgba(0, 0, 0, .125);
+}
+.card-body { flex: 1 1 auto; padding: 1rem 1rem; }
+
+.input-group {
+  position: relative; display: flex; flex-wrap: wrap;
+  align-items: stretch; width: 100%;
+}
+.input-group-text {
+  display: flex; align-items: center; padding: .375rem .75rem;
+  font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529;
+  text-align: center; white-space: nowrap; background-color: #e9ecef;
+  border: 1px solid #ced4da; border-radius: .25rem;
+}
+.input-group > .form-control, .input-group > .form-select {
+  position: relative; flex: 1 1 auto; width: 1%; min-width: 0;
+}
+.input-group > :not(:first-child):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  margin-left: -1px; border-top-left-radius: 0; border-bottom-left-radius: 0;
+}
+.input-group > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.valid-tooltip):not(.valid-feedback):not(.invalid-tooltip):not(.invalid-feedback) {
+  border-top-right-radius: 0; border-bottom-right-radius: 0;
+}
+
+.form-control {
+  display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem;
+  font-weight: 400; line-height: 1.5; color: #212529; background-color: #fff;
+  background-clip: padding-box; border: 1px solid #ced4da; appearance: none;
+  border-radius: .25rem; transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.form-select {
+  display: block; width: 100%; padding: .375rem 2.25rem .375rem .75rem;
+  font-size: 1rem; font-weight: 400; line-height: 1.5; color: #212529;
+  background-color: #fff; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right .75rem center;
+  background-size: 16px 12px; border: 1px solid #ced4da; border-radius: .25rem;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out; appearance: none;
+}
+.form-select-sm {
+  padding-top: .25rem; padding-bottom: .25rem; padding-left: .5rem;
+  font-size: .875rem; border-radius: .2rem; margin-top: 0.5rem;
+}
+.form-control:focus, .form-select:focus {
+  color: #212529; background-color: #fff; border-color: #86b7fe;
+  outline: 0; box-shadow: 0 0 0 .25rem rgba(13, 110, 253, .25);
+}
+.form-control.is-invalid, .form-select.is-invalid {
+  border-color: #dc3545; padding-right: calc(1.5em + .75rem);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
+  background-repeat: no-repeat; background-position: right calc(.375em + .1875rem) center;
+  background-size: calc(.75em + .375rem) calc(.75em + .375rem);
+}
+.form-control.is-invalid:focus, .form-select.is-invalid:focus {
+  border-color: #dc3545; box-shadow: 0 0 0 .25rem rgba(220, 53, 69, .25);
+}
+
+.btn-success {
+  background-color: #198754; color: white; border-color: #198754;
+}
+.btn-secondary {
+  background-color: #dc3545; color: white; border-color: #dc3545;
+}

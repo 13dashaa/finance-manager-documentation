@@ -1,0 +1,18 @@
+.categories-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.categories-table th, .categories-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  border: 1px solid #dee2e6; /* Выровнено с clients-table */
+}
+
+.categories-table thead th {
+  background-color: #f1f3f5; /* Немного светлее/уникальнее */
+  font-weight: 600;
+  color: #343a40;
+}

@@ -1,0 +1,252 @@
+/* --- Общие стили для контейнера и элементов (заимствовано из примера) --- */
+
+.account-detail-container.card {
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px; /* Добавим отступ снизу */
+}
+
+.button-secondary {
+  padding: 8px 15px;
+  background-color: #6c757d; /* Цвет Bootstrap secondary */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none; /* Убрать подчеркивание, если используется <a> */
+  display: inline-block; /* Для правильного применения margin */
+}
+
+.button-secondary:hover {
+  background-color: #5a6268;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important; /* Эмулируем Bootstrap mb-3 */
+}
+
+.loading-indicator {
+  padding: 15px;
+  background-color: #e2f3fe; /* Светло-голубой фон */
+  border: 1px solid #b8e1fc;
+  color: #0c5460; /* Темно-голубой текст */
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.error-message {
+  padding: 15px;
+  background-color: #f8d7da; /* Светло-красный фон */
+  border: 1px solid #f5c6cb;
+  color: #721c24; /* Темно-красный текст */
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.error-message.warning { /* Для ошибок транзакций (желтоватый) */
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+.no-data-message {
+  color: #6c757d; /* Серый текст */
+  padding: 15px;
+  background-color: #f8f9fa; /* Светло-серый фон */
+  border-radius: 4px;
+  margin-top: 15px; /* Отступ сверху */
+}
+
+.text-center {
+  text-align: center;
+}
+.text-right {
+  text-align: right;
+}
+
+.small {
+  font-size: 0.875em; /* Аналог Bootstrap small */
+}
+
+.text-muted {
+  color: #6c757d !important; /* Аналог Bootstrap text-muted */
+}
+
+/* --- Стили секции Детали Аккаунта --- */
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Выравнивание по верху, если контент разной высоты */
+  margin-bottom: 15px;
+  gap: 20px; /* Пространство между блоками */
+  flex-wrap: wrap; /* Перенос на новую строку на маленьких экранах */
+}
+
+.account-name {
+  margin: 0 0 5px 0; /* Уменьшим нижний отступ */
+  font-size: 1.75rem; /* Размер заголовка */
+  color: #333;
+}
+
+.client-info {
+  font-size: 0.9rem;
+  color: #555;
+  background-color: #e9ecef; /* Светло-серый фон */
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block; /* Чтобы padding работал */
+}
+
+.account-balance-summary {
+  text-align: right;
+  /* Стили похожие на total-balance */
+  background: #f8f9fa;
+  padding: 10px 20px;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-width: 180px; /* Чтобы блок не был слишком узким */
+}
+
+.account-balance-summary h4 {
+  font-size: 2rem; /* Крупный шрифт для баланса */
+  font-weight: bold;
+  margin: 0;
+}
+
+.positive-amount {
+  color: green;
+  font-weight: bold;
+}
+
+.negative-amount {
+  color: red; /* Красный */
+  font-weight: bold;
+}
+
+.account-meta {
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  color: #444;
+}
+.account-meta p {
+  margin-bottom: 5px;
+}
+
+
+/* Описания транзакций */
+.transaction-descriptions-section {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.transaction-descriptions-section p strong {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.description-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex; /* Отображаем в строку */
+  flex-wrap: wrap; /* Разрешаем перенос */
+  gap: 8px; /* Пространство между элементами */
+}
+
+.description-item {
+  /* display: inline-block; убрано из-за flex */
+  /* margin-right: 8px; убрано из-за gap */
+}
+
+.description-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1;
+  color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: baseline;
+  border-radius: 0.375rem; /* Закругление как у Bootstrap badge */
+  background-color: rgba(5, 79, 177, 0.69); /* Серый фон (Bootstrap secondary) */
+}
+
+
+/* --- Стили секции Транзакций --- */
+
+.transactions-section {
+  margin-top: 20px;
+}
+
+.section-title {
+  margin-bottom: 15px;
+  font-size: 1.5rem;
+  color: #333;
+  border-bottom: 2px solid #eee; /* Легкая нижняя граница */
+  padding-bottom: 5px;
+}
+
+.table-container {
+  overflow-x: auto; /* Горизонтальный скролл для таблицы на малых экранах */
+  border: 1px solid #e0e0e0; /* Граница вокруг таблицы */
+  border-radius: 6px; /* Скругление углов */
+  margin-top: 15px; /* Отступ сверху */
+}
+
+.details-table {
+  width: 100%;
+  border-collapse: collapse; /* Убираем двойные линии */
+  font-size: 0.9rem; /* Немного уменьшим шрифт в таблице */
+}
+
+.details-table th,
+.details-table td {
+  padding: 10px 12px; /* Внутренние отступы ячеек */
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0; /* Горизонтальные линии */
+  vertical-align: middle; /* Выравнивание по центру по вертикали */
+}
+
+.details-table th {
+  background-color: #f8f9fa; /* Светлый фон для заголовков */
+  font-weight: 600; /* Полужирный шрифт */
+  white-space: nowrap; /* Запрет переноса заголовков */
+}
+
+.details-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9; /* Чередование цвета строк (зебра) */
+}
+
+.details-table tbody tr:hover {
+  background-color: #f1f1f1; /* Подсветка строки при наведении */
+}
+
+/* Адаптивность (пример) */
+@media (max-width: 768px) {
+  .account-header {
+    flex-direction: column; /* Заголовок в столбец */
+    align-items: stretch; /* Растянуть элементы */
+  }
+  .account-balance-summary {
+    text-align: left; /* Выравнивание баланса по левому краю */
+    margin-top: 10px;
+  }
+  .account-name {
+    font-size: 1.5rem;
+  }
+  .account-balance-summary h4 {
+    font-size: 1.75rem;
+  }
+}

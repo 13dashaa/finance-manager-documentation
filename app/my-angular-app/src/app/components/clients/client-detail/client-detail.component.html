@@ -1,0 +1,227 @@
+<div class="client-detail-container card">
+  <button (click)="goBack()" class="button-back mb-3">&larr;</button>
+
+  <div *ngIf="isLoading" class="loading-indicator">Loading client details...</div>
+  <div *ngIf="errorMessage && !isLoading" class="error-message">⚠️ Error: {{ errorMessage }}</div>
+
+  <div *ngIf="client && !isLoading && !errorMessage">
+    <div class="client-header">
+      <div>
+        <h2 class="client-name">Клиент: {{ client.username }}</h2>
+        <p><strong>Email:</strong> {{ client.email }}</p>
+      </div>
+      <div class="total-balance">
+        <p [ngClass]="{'positive-amount': totalBalance >= 0, 'negative-amount': totalBalance < 0}">
+          {{ totalBalance | currency:'USD':'symbol':'1.2-2' }}
+        </p>
+      </div>
+    </div>
+
+    <hr>
+
+    <div class="grid-container">
+      <div class="accounts-summary">
+        <h3>Счета</h3>
+        <div *ngIf="accounts.length > 0; else noAccounts" class="table-container card">
+          <table class="details-table">
+            <thead>
+            <tr>
+              <th>название</th>
+              <th>баланс</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let account of accounts">
+              <td>
+                <a [routerLink]="['/accounts', account.id]" title="View details for {{ account.name }}">
+                  {{ account.name }}
+                </a>
+              </td>
+              <td [ngClass]="{'positive-amount': account.balance >= 0, 'negative-amount': account.balance < 0}">
+                {{ account.balance | currency:'USD':'symbol':'1.2-2' }}
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <ng-template #noAccounts>
+          <p class="no-data-message">This client has no accounts.</p>
+        </ng-template>
+      </div>
+
+      <div class="financial-summary">
+        <h3>Сводка</h3>
+        <div class="chart-container">
+          <div *ngIf="isBrowser">
+            <canvas [datasets]="chartData.datasets"
+                    [labels]="chartData.labels"
+                    [type]="'doughnut'"
+                    baseChart>
+            </canvas>
+          </div>
+          <div class="chart-legend">
+            <p><span class="legend-color income"></span> Income: {{ totalIncome | currency:'USD':'symbol':'1.2-2' }}</p>
+            <p><span class="legend-color expense"></span>
+              Expenses: {{ Math.abs(totalExpenses) | currency:'USD':'symbol':'1.2-2' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="budgets-summary">
+        <h3>Лимиты</h3>
+        <div *ngIf="budgets.length > 0; else noBudgets" class="budget-list">
+          <details *ngFor="let budget of budgets" class="budget-item">
+            <summary>
+              <strong>{{ budget.categoryName }}</strong>
+              (Лимит: {{ budget.limitation | currency:'USD':'symbol':'1.2-2' }}, Срок: {{ budget.period }} дней)
+            </summary>
+            <div class="budget-details">
+              <p>Совместно с клиентами:</p>
+              <ul>
+                <li *ngFor="let username of budget.clientUsernames; let i = index">
+                  <a [routerLink]="['/clients', budget.clientIds[i]]" title="Детали для {{ username }}">
+                    {{ username }}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </details>
+        </div>
+        <ng-template #noBudgets>
+          <p class="no-data-message">This client is not associated with any budgets.</p>
+        </ng-template>
+      </div>
+    </div>
+    <div class="goals-summary">
+      <h3>Цели</h3>
+      <div *ngIf="isLoadingGoals" class="loading-indicator">Loading goals...</div>
+      <div *ngIf="goalsErrorMessage && !isLoadingGoals" class="error-message">
+        ⚠️ Error loading goals: {{ goalsErrorMessage }}
+      </div>
+
+      <div *ngIf="clientGoals.length > 0 && !isLoadingGoals && !goalsErrorMessage; else noGoals"
+           class="table-container card">
+        <table class="details-table goals-table"> <!-- Добавлен класс goals-table -->
+          <thead>
+          <tr>
+            <th>Название</th>
+            <th>Цель</th>
+            <th>Текущая сумма</th>
+            <th>Прогресс</th>
+            <th>Дата окончания</th>
+            <th class="text-center">Действия</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let goal of clientGoals">
+            <td>{{ goal.name }}</td>
+            <td>{{ goal.targetAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+            <td>{{ goal.currentAmount | currency:'USD':'symbol':'1.2-2' }}</td>
+            <td>
+              <progress [max]="goal.targetAmount" [value]="goal.currentAmount" style="width: 100%;"
+                        title="{{ (goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0) | number:'1.0-1' }}% completed">
+              </progress>
+              <span class="small d-block text-center">
+                {{ (goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0) | number:'1.0-1' }}%
+                </span>
+            </td>
+            <td>{{ goal.endDate | date:'yyyy-MM-dd' }}</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-success"
+                      title="Add funds towards this goal"
+                      (click)="openAddFundsModal(goal)"
+                      [disabled]="isSubmittingFunds">
+                💰 перевести деньги
+              </button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noGoals>
+        <div *ngIf="!isLoadingGoals && !goalsErrorMessage">
+          <p class="no-data-message">Нет целей у клиента.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <div *ngIf="showAddFundsForm && selectedGoalForFunding" class="add-funds-modal-overlay">
+      <div class="add-funds-modal card">
+        <div class="add-funds-modal__header card-header">
+          <h5 class="add-funds-modal__title">Перевести на цель: {{ selectedGoalForFunding.name }}</h5>
+          <button type="button" class="add-funds-modal__close-btn" aria-label="Close" (click)="closeAddFundsModal()" [disabled]="isSubmittingFunds"></button> <!-- Используем кастомный класс -->
+        </div>
+        <form [formGroup]="addFundsForm" (ngSubmit)="submitAddFunds()" class="add-funds-modal__body card-body">
+          <p class="add-funds-modal__goal-info">
+            Target: {{ selectedGoalForFunding.targetAmount | currency:'USD':'symbol' }} |
+            Current: {{ selectedGoalForFunding.currentAmount | currency:'USD':'symbol' }}
+          </p>
+
+          <div class="add-funds-modal__group">
+            <label for="add-funds-amount" class="add-funds-modal__label">Количество для перевода <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input type="number" id="add-funds-amount" class="form-control"
+                     formControlName="amount" required min="0.01" step="0.01" placeholder="50.00"
+                     [class.is-invalid]="addFundsForm.get('amount')?.invalid && addFundsForm.get('amount')?.touched">
+            </div>
+            <div *ngIf="addFundsForm.get('amount')?.errors?.['required'] && addFundsForm.get('amount')?.touched" class="invalid-feedback d-block">Amount is required.</div>
+            <div *ngIf="addFundsForm.get('amount')?.errors?.['min'] && addFundsForm.get('amount')?.touched" class="invalid-feedback d-block">Amount must be positive.</div>
+          </div>
+
+          <div class="add-funds-modal__group">
+            <label for="add-funds-account" class="add-funds-modal__label">Со счета <span class="text-danger">*</span></label>
+            <select id="add-funds-account" class="form-select" formControlName="accountId" required
+                    [class.is-invalid]="addFundsForm.get('accountId')?.invalid && addFundsForm.get('accountId')?.touched">
+              <option [ngValue]="null" disabled>-- Выбрать счет --</option>
+              <option *ngFor="let acc of accounts; trackBy: trackById" [ngValue]="acc.id">
+                {{ acc.name }} (Баланс: {{ acc.balance | currency:'USD':'symbol' }})
+              </option>
+            </select>
+            <div *ngIf="addFundsForm.get('accountId')?.errors?.['required'] && addFundsForm.get('accountId')?.touched" class="invalid-feedback">Account selection is required.</div>
+            <div *ngIf="accounts.length === 0" class="add-funds-modal__form-text text-warning">No accounts available for this client.</div> <!-- Кастомный класс -->
+          </div>
+
+          <div class="add-funds-modal__group">
+            <label for="add-funds-category" class="add-funds-modal__label">Категория транзакции <span class="text-danger">*</span></label>
+            <div *ngIf="categoryLoadErrorMessage && !isLoadingCategories" class="alert alert-warning add-funds-modal__alert"> <!-- Кастомный класс -->
+              <span>⚠️ {{ categoryLoadErrorMessage }}</span>
+              <button type="button" (click)="loadCategories()" class="btn-link-inline" [disabled]="isLoadingCategories"> <!-- Кастомный класс -->
+                {{ isLoadingCategories ? 'Loading...' : 'Retry' }}
+              </button>
+            </div>
+            <select id="add-funds-category" class="form-select" formControlName="categoryId" required
+                    [class.is-invalid]="addFundsForm.get('categoryId')?.invalid && addFundsForm.get('categoryId')?.touched"
+                    [attr.disabled]="isLoadingCategories || (categories.length === 0 && !categoryLoadErrorMessage) ? true : null">
+              <option [ngValue]="null" disabled>
+                {{ isLoadingCategories ? 'Loading categories...' : (categories.length === 0 ? 'No categories available' : '-- Select Category --') }}
+              </option>
+              <option *ngFor="let cat of categories; trackBy: trackById" [ngValue]="cat.id">
+                {{ cat.name }}
+              </option>
+            </select>
+            <div *ngIf="addFundsForm.get('categoryId')?.errors?.['required'] && addFundsForm.get('categoryId')?.touched" class="invalid-feedback">Category selection is required.</div>
+            <div *ngIf="!isLoadingCategories && categories.length === 0 && !categoryLoadErrorMessage" class="add-funds-modal__form-text text-warning">No transaction categories found. Please configure categories.</div>
+            <div class="add-funds-modal__form-text text-muted">Select a category for the expense transaction (e.g., "Savings", "Goal Funding").</div>
+          </div>
+
+          <div *ngIf="addFundsErrorMessage" class="alert alert-danger add-funds-modal__alert">
+            {{ addFundsErrorMessage }}
+          </div>
+
+          <div class="add-funds-modal__actions">
+            <button type="submit" class="btn btn-primary" [disabled]="addFundsForm.invalid || isSubmittingFunds || isLoadingCategories">
+              <span *ngIf="isSubmittingFunds" class="spinner-border spinner-border-sm me-1"  aria-hidden="true"></span>
+              {{ isSubmittingFunds ? 'Saving...' : 'Save Funds' }}
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="closeAddFundsModal()" [disabled]="isSubmittingFunds"> <!-- Добавлен ms-2 не нужен из-за gap -->
+              Cancel
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

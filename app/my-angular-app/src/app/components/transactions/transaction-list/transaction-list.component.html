@@ -1,0 +1,170 @@
+<h2>Переводы</h2>
+
+<div *ngIf="errorMessage" class="error-message">
+  Error: {{ errorMessage }}
+</div>
+
+<div *ngIf="isLoading" class="loading-indicator">Loading transactions...</div>
+
+<div class="controls">
+  <button (click)="showAddForm = !showAddForm" class="add-button">
+    {{ showAddForm ? 'Cancel Adding' : 'Add New Transaction' }}
+  </button>
+</div>
+
+<div *ngIf="showAddForm" class="add-form-container card">
+  <h5 class="card-header">
+    Добавить перевод
+  </h5>
+
+  <form (ngSubmit)="onSubmit()" [formGroup]="transactionForm" class="card-body" novalidate>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="account">Счет <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <select id="account"
+                class="form-select w-100"
+                formControlName="accountId"
+                required
+                [class.is-invalid]="transactionForm.get('accountId')?.invalid && transactionForm.get('accountId')?.touched">
+          <option [ngValue]="null" disabled>Выбрать счет</option>
+          <option *ngFor="let account of accounts$ | async; trackBy: trackById" [value]="account.id">
+            {{ account.name }}
+          </option>
+        </select>
+      </div>
+      <div *ngIf="transactionForm.get('accountId')?.invalid && transactionForm.get('accountId')?.touched"
+           class="invalid-feedback">
+        Account is required.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="category">Категория <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <select id="category"
+                class="form-select w-100"
+                formControlName="categoryId"
+                required
+                [class.is-invalid]="transactionForm.get('categoryId')?.invalid && transactionForm.get('categoryId')?.touched">
+          <option [ngValue]="null" disabled>Выбрать категорию</option>
+          <option *ngFor="let category of categories$ | async; trackBy: trackById" [value]="category.id">
+            {{ category.name }}
+          </option>
+        </select>
+      </div>
+      <div *ngIf="transactionForm.get('categoryId')?.invalid && transactionForm.get('categoryId')?.touched"
+           class="invalid-feedback">
+        Category is required.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="amount">Сумма <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="number"
+               id="amount"
+               formControlName="amount"
+               required
+               class="form-control w-100"
+               [class.is-invalid]="transactionForm.get('amount')?.invalid && transactionForm.get('amount')?.touched" />
+      </div>
+      <div *ngIf="transactionForm.get('amount')?.errors?.['required'] && transactionForm.get('amount')?.touched"
+           class="invalid-feedback d-block">
+        Amount is required.
+      </div>
+      <div *ngIf="transactionForm.get('amount')?.errors?.['pattern'] && transactionForm.get('amount')?.touched"
+           class="invalid-feedback d-block">
+        Please enter a valid number (e.g., 12.34 or -50).
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="description">Описание</label>
+      <div class="input-group">
+        <input type="text"
+               id="description"
+               formControlName="description"
+               class="form-control w-100" />
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="date">Дата <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="datetime-local"
+               id="date"
+               formControlName="date"
+               required
+               class="form-control w-100"
+               [class.is-invalid]="transactionForm.get('date')?.invalid && transactionForm.get('date')?.touched" />
+      </div>
+      <div *ngIf="transactionForm.get('date')?.invalid && transactionForm.get('date')?.touched"
+           class="invalid-feedback">
+        Date is required.
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage && !isLoading" class="alert alert-danger mt-3 p-2">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-actions border-top pt-3 mt-3">
+      <button type="submit"
+              class="btn btn-success"
+              [disabled]="transactionForm.invalid || isLoading">
+        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+        {{ isLoading ? 'Saving...' : 'Save Transaction' }}
+      </button>
+      <button type="button"
+              class="btn btn-secondary ms-2"
+              (click)="showAddForm = false; transactionForm.reset({ date: getCurrentDateTimeLocal() })"
+              [disabled]="isLoading">
+        Cancel
+      </button>
+    </div>
+
+  </form>
+</div>
+
+<div *ngIf="!isLoading && !errorMessage && transactions.length > 0" class="table-container">
+  <table class="clients-table">
+    <thead>
+    <tr>
+
+      <th>Счет</th>
+      <th>Сумма</th>
+      <th>Описание</th>
+      <th>Категория</th>
+      <th>Дата</th>
+      <th>Операции</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let tx of transactions; trackBy: trackById">
+      <td>
+        <a [routerLink]="['/accounts',  tx.accountId]" title="View details for {{ tx.accountName }}">
+          {{ tx.accountName }}
+        </a></td>
+      <td [ngClass]="{'positive-amount': tx.amount >= 0, 'negative-amount': tx.amount < 0}">
+        {{ tx.amount | currency:'USD':'symbol':'1.2-2' }}
+      </td>
+      <td>{{ tx.description || '-' }}</td>
+      <td>{{ tx.categoryName }} <span class="text-muted"></span></td>
+      <td>{{ tx.date | date:'yyyy-MM-dd HH:mm' }}</td>
+      <td>
+        <button (click)="openEditForm(tx)" [disabled]="isLoading" class="action-button edit" title="Edit">✏️</button>
+        <button (click)="deleteTransaction(tx.id)" [disabled]="isLoading" class="action-button delete" title="Delete">
+          🗑️
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div *ngIf="!isLoading && transactions.length === 0 && !errorMessage" class="no-data-message">
+  <p>No transactions found.</p>
+  <p *ngIf="!showAddForm">You can <a (click)="$event.preventDefault(); showAddForm = true" href="#">add a new
+    transaction</a>.</p>
+</div>

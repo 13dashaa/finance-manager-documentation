@@ -1,0 +1,64 @@
+<div class="budget-detail-fullwidth" *ngIf="budget">
+  <!-- Шапка бюджета -->
+  <div class="budget-header">
+    <div class="budget-title">
+      <h2>{{ budget.categoryName }}</h2>
+      <p class="budget-period">{{ budget.period }} дней</p>
+    </div>
+    <div class="total-balance">
+      <span class="available-label">Доступно</span>
+      <p class="available-amount">{{ budget.availableSum | currency:'USD' }}</p>
+    </div>
+  </div>
+
+  <div class="grid-container">
+    <div class="financial-summary">
+      <div class="budget-progress-section">
+        <div class="spent-info">
+          <strong>Потрачено:</strong>
+          <span class="spent-amount">{{ getSpent() | currency:'USD' }}</span>
+          <span class="spent-separator">/</span>
+          <span class="spent-limit">{{ budget.limitation | currency:'USD' }}</span>
+        </div>
+
+        <div class="custom-progress-container">
+          <div
+            class="custom-progress-bar"
+            [style.width.%]="(getSpent() / budget.limitation) * 100"
+          >
+            {{ (getSpent() / budget.limitation) * 100 | number:'1.0-1' }}%
+          </div>
+        </div>
+      </div>
+
+      <div class="budget-dates">
+        <div class="date-item">
+          <span class="date-label">Создан:</span>
+          <span class="date-value">{{ budget.createdAt | date:'medium' }}</span>
+        </div>
+        <div class="date-item">
+          <span class="date-label">Обновлен:</span>
+          <span class="date-value">{{ budget.updatedAt | date:'medium' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="accounts-summary">
+      <div class="budget-clients-section">
+        <h3>Связанные клиенты</h3>
+        <div class="client-list">
+          <ng-container *ngIf="getClientUsernames().length; else noClients">
+            <ng-container *ngFor="let username of getClientUsernames(); let i = index">
+              <a [routerLink]="['/clients', getClientIdByIndex(i)]" class="client-link">
+                {{ username }}
+              </a>{{ i < getClientUsernames().length - 1 ? ', ' : '' }}
+            </ng-container>
+          </ng-container>
+          <ng-template #noClients><em class="no-clients">No clients assigned</em></ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div>

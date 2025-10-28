@@ -1,0 +1,94 @@
+<!-- src/app/components/categories/category-list/category-list.component.html -->
+<h2>Categories</h2>
+
+<!-- Сообщение об ошибке -->
+<div *ngIf="errorMessage && !isLoading" class="error-message">
+  Error: {{ errorMessage }}
+</div>
+
+<!-- Индикатор загрузки -->
+<div *ngIf="isLoading" class="loading-indicator">Loading categories...</div>
+
+<!-- Кнопка добавления (показывается, когда форма скрыта) -->
+<div *ngIf="!showAddEditForm && !isLoading" class="controls">
+  <button (click)="openAddForm()" class="add-button">
+    Add New Category
+  </button>
+</div>
+
+<!-- Форма добавления/редактирования -->
+<div *ngIf="showAddEditForm" class="add-form-container">
+  <h5>{{ isEditMode ? 'Edit Category (ID: ' + currentCategoryId + ')' : 'Add New Category' }}</h5>
+  <form (ngSubmit)="onSubmit()" [formGroup]="categoryForm">
+
+    <!-- Category Name -->
+    <div class="form-group mb-3">
+      <label class="form-label" for="categoryName">Category Name *</label>
+      <input
+        [class.is-invalid]="categoryForm.get('name')?.invalid && categoryForm.get('name')?.touched"
+        class="form-control"
+        formControlName="name"
+        id="categoryName"
+        required
+        type="text"
+      >
+      <div *ngIf="categoryForm.get('name')?.errors?.['required'] && categoryForm.get('name')?.touched"
+           class="invalid-feedback">
+        Category name is required.
+      </div>
+      <div *ngIf="categoryForm.get('name')?.errors?.['minlength'] && categoryForm.get('name')?.touched"
+           class="invalid-feedback">
+        Category name must be at least 2 characters long.
+      </div>
+      <!-- Другие сообщения валидации, если нужны -->
+    </div>
+
+    <!-- Сообщение об ошибке формы (после отправки) -->
+    <div *ngIf="errorMessage && categoryForm.touched && !isLoading" class="error-message mb-3">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Кнопки формы -->
+    <div class="form-actions">
+      <button [disabled]="categoryForm.invalid || isLoading" class="button-primary" type="submit">
+        {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Category' : 'Save Category') }}
+      </button>
+      <button (click)="cancelForm()" [disabled]="isLoading" class="button-secondary" type="button">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Таблица с категориями (показывается, когда не идет загрузка, есть данные и форма скрыта) -->
+<div *ngIf="!isLoading && categories.length > 0 && !showAddEditForm" class="table-container">
+  <table class="categories-table"> <!-- Используем свой класс или общий -->
+    <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Используем trackBy для оптимизации -->
+    <tr *ngFor="let category of categories; trackBy: trackById">
+      <td>{{ category.id }}</td>
+      <td>{{ category.name }}</td>
+      <td>
+        <button (click)="openEditForm(category)" [disabled]="isLoading" class="action-button edit" title="Edit">✏️
+        </button>
+        <button (click)="deleteCategory(category.id, category.name)" [disabled]="isLoading" class="action-button delete"
+                title="Delete">🗑️
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Сообщение, если категорий нет (и нет ошибки/загрузки, форма скрыта) -->
+<div *ngIf="!isLoading && categories.length === 0 && !errorMessage && !showAddEditForm" class="no-data-message">
+  <p>No categories found.</p>
+  <p>You can <a (click)="$event.preventDefault(); openAddForm()" href="#">add a new category</a>.</p>
+</div>

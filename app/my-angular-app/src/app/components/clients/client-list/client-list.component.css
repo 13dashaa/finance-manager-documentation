@@ -1,0 +1,54 @@
+.controls {
+  display: flex;
+  justify-content: flex-end; /* Кнопка справа */
+  align-items: center;
+  margin-bottom: 20px; /* Увеличил отступ */
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.clients-table tbody tr:hover {
+  background-color: #e8f4ff; /* Подсветка строки при наведении */
+}
+.form-control[readonly] {
+  background-color: #e9ecef; /* Светло-серый фон */
+  opacity: 1; /* Убираем прозрачность по умолчанию для readonly */
+  cursor: not-allowed; /* Курсор 'не разрешено' */
+}
+.form-control.is-invalid, .form-select.is-invalid {
+  border-color: #dc3545;
+}
+.error-message {
+  padding: 12px 16px;
+  margin: 16px 0;
+  border-radius: 6px;
+  background-color: #fff5f5;
+  border-left: 4px solid #ff5252;
+  color: #d32f2f;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 0.3s ease-out;
+
+  &::before {
+    content: "⚠️";
+    margin-right: 10px;
+    font-size: 16px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

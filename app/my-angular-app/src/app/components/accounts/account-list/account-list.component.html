@@ -1,0 +1,204 @@
+<h2>Счета</h2>
+
+<div *ngIf="errorMessage && !isLoading && !showAddEditForm" class="alert alert-danger mb-3">
+  {{ errorMessage }}
+</div>
+
+<div *ngIf="isLoading && !showAddEditForm" class="loading-indicator alert alert-info">Loading accounts...</div>
+
+<div *ngIf="!showAddEditForm && !isLoading" class="controls mb-3 d-flex justify-content-between align-items-center">
+
+  <div class="filter-container d-flex align-items-center">
+    <label for="client-filter" class="form-label me-2 mb-0">Filter:</label>
+    <select id="client-filter" class="form-select form-select-sm w-auto"
+            [disabled]="isLoadingClients || isLoading"
+            (change)="onClientFilterChange($event)">
+      <option value="null" [selected]="selectedClientIdFilter === null">-- Все клиенты --</option>
+      <option *ngIf="isLoadingClients" disabled>Loading clients...</option>
+      <ng-container *ngIf="!isLoadingClients">
+        <option *ngFor="let client of clients; trackBy: trackById" [value]="client.id" [selected]="selectedClientIdFilter === client.id">
+          {{ client.username }}
+        </option>
+      </ng-container>
+    </select>
+    <div *ngIf="isLoadingClients" class="spinner-border spinner-border-sm text-secondary ms-2">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <span *ngIf="clientLoadErrorMessage && !isLoadingClients" class="text-danger small ms-2">
+        ⚠️ <button type="button" (click)="loadClientsForDropdown()" class="btn btn-sm btn-link p-0 m-0 align-baseline text-danger">Reload Clients</button>
+     </span>
+  </div>
+
+  <div>
+    <button (click)="openAddForm()" [disabled]="isLoadingClients" class="add-button btn btn-primary">
+      <span *ngIf="!isLoadingClients">Добавить новый аккаунт</span>
+      <span *ngIf="isLoadingClients"
+            aria-hidden="true"
+            class="spinner-border spinner-border-sm me-1"></span>
+      <span *ngIf="isLoadingClients">Loading Clients...</span>
+    </button>
+    <span *ngIf="clientLoadErrorMessage && !isLoadingClients" class="text-danger small ms-2">
+          ⚠️ {{ clientLoadErrorMessage }}
+      <button (click)="loadClientsForDropdown()" class="btn btn-sm btn-link p-0 m-0 align-baseline"
+              type="button">Retry</button>
+    </span>
+  </div>
+
+</div>
+
+<div *ngIf="showAddEditForm" class="add-form-container card">
+  <h5 class="card-header">
+    {{ isEditMode ? 'Редактировать счет (' + currentAccountId + ')' : 'Добавить новый счет' }}
+  </h5>
+
+  <form (ngSubmit)="onSubmit()" [formGroup]="accountForm" class="card-body" novalidate>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="account-name">Название <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <input type="text"
+               id="account-name"
+               formControlName="name"
+               maxlength="100"
+               required
+               class="form-control w-100"
+               [class.is-invalid]="accountForm.get('name')?.invalid && accountForm.get('name')?.touched" />
+      </div>
+      <div *ngIf="accountForm.get('name')?.errors?.['required'] && accountForm.get('name')?.touched" class="invalid-feedback">
+        Account name is required.
+      </div>
+      <div *ngIf="accountForm.get('name')?.errors?.['maxlength'] && accountForm.get('name')?.touched" class="invalid-feedback">
+        Name cannot exceed {{ accountForm.get('name')?.errors?.['maxlength'].requiredLength }} characters.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" for="account-balance">Баланс <span class="text-danger">*</span></label>
+      <div class="input-group">
+        <span class="input-group-text">$</span>
+        <input type="number"
+               id="account-balance"
+               formControlName="balance"
+               min="0.01"
+               required
+               step="0.01"
+               class="form-control w-100"
+               [class.is-invalid]="accountForm.get('balance')?.invalid && accountForm.get('balance')?.touched" />
+      </div>
+      <div *ngIf="accountForm.get('balance')?.errors?.['required'] && accountForm.get('balance')?.touched" class="invalid-feedback d-block">
+        Balance is required.
+      </div>
+      <div *ngIf="accountForm.get('balance')?.errors?.['min'] && accountForm.get('balance')?.touched" class="invalid-feedback d-block">
+        Balance must be at least {{ accountForm.get('balance')?.errors?.['min'].min | currency:'USD':'symbol':'1.2-2' }}.
+      </div>
+    </div>
+
+    <div class="form-group mb-3">
+      <label class="form-label" [for]="!isEditMode ? 'client-id' : null">
+        Client <span *ngIf="!isEditMode" class="text-danger">*</span>
+      </label>
+
+      <ng-container *ngIf="!isEditMode">
+        <div *ngIf="clientLoadErrorMessage && !isLoadingClients" class="alert alert-warning p-2 small d-flex justify-content-between align-items-center mb-1">
+          <span>⚠️ {{ clientLoadErrorMessage }}</span>
+          <button (click)="loadClientsForDropdown()" [disabled]="isLoadingClients" class="btn btn-sm btn-link p-0 m-0 align-baseline" type="button">
+            {{ isLoadingClients ? 'Loading...' : 'Retry' }}
+          </button>
+        </div>
+
+        <div class="input-group">
+          <select id="client-id"
+                  class="form-select w-100"
+                  formControlName="clientId"
+                  [attr.disabled]="isLoadingClients || (clients.length === 0 && !clientLoadErrorMessage) ? true : null"
+                  [class.is-invalid]="accountForm.get('clientId')?.invalid && accountForm.get('clientId')?.touched">
+            <option [ngValue]="null" disabled>
+              {{ isLoadingClients ? 'Loading clients...' : ((clients.length === 0 && !clientLoadErrorMessage) ? 'No clients available' : '-- Select a Client --') }}
+            </option>
+            <option *ngFor="let client of clients; trackBy: trackById" [ngValue]="client.id">
+              {{ client.username }}
+            </option>
+          </select>
+        </div>
+
+        <div *ngIf="accountForm.get('clientId')?.errors?.['required'] && accountForm.get('clientId')?.touched" class="invalid-feedback">
+          Selecting a client is required.
+        </div>
+
+        <div *ngIf="!isLoadingClients && clients.length === 0 && !clientLoadErrorMessage" class="form-text text-warning mt-1">
+          No clients available to assign an account to. Please add clients first.
+        </div>
+      </ng-container>
+
+      <div *ngIf="isEditMode" class="form-control-plaintext ps-2">
+        {{ getClientUsername(accountForm.getRawValue().clientId) }}
+        <br><small class="text-muted fst-italic">(Client cannot be changed after account creation)</small>
+      </div>
+    </div>
+
+    <div *ngIf="errorMessage && !isLoading" class="alert alert-danger mt-3 p-2">
+      {{ errorMessage }}
+    </div>
+
+    <div class="form-actions border-top pt-3 mt-3">
+      <button type="submit"
+              class="btn btn-success"
+              [disabled]="accountForm.invalid || isLoading || isLoadingClients">
+        <output *ngIf="isLoading" class="spinner-border spinner-border-sm me-1" aria-hidden="true"></output>
+        {{ isLoading ? 'Saving...' : (isEditMode ? 'Обновить' : 'Сохранить') }}
+      </button>
+      <button type="button"
+              class="btn btn-secondary ms-2"
+              (click)="cancelForm()"
+              [disabled]="isLoading">
+        Отменить      </button>
+    </div>
+
+  </form>
+</div>
+
+<div *ngIf="!showAddEditForm && !isLoading" class="table-responsive mt-3">
+
+  <div *ngIf="accounts.length > 0" class="card">
+    <table class="clients-table table table-striped table-hover mb-0">
+      <thead class="table-light">
+      <tr>
+
+        <th scope="col">Название</th>
+        <th scope="col">Клиент</th>
+        <th class="text-center" scope="col">Операции</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let account of accounts; trackBy: trackById">
+        <td>
+          <a [routerLink]="['/accounts', account.id]" title="View details for {{ account.name }}">
+            {{ account.name }}
+          </a>
+        </td>
+        <td>{{ account.clientUsername || '(no name)' }}</td>
+        <td class="text-center">
+          <button (click)="openEditForm(account)" [disabled]="isLoading"
+                  class="action-button edit btn btn-sm btn-outline-secondary me-1" title="Edit Account">✏️
+          </button>
+          <button (click)="deleteAccount(account.id, account.name)" [disabled]="isLoading"
+                  class="action-button delete btn btn-sm btn-outline-danger" title="Delete Account">🗑️
+          </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="!isLoading && accounts.length === 0 && !errorMessage && !showAddEditForm"
+     class="no-data-message alert alert-secondary mt-3 text-center">
+  <p *ngIf="selectedClientIdFilter === null" class="mb-1">No accounts found.</p>
+  <p *ngIf="selectedClientIdFilter !== null" class="mb-1">No accounts found for the selected client.</p>
+
+  <p *ngIf="!isLoadingClients || (isLoadingClients && !clientLoadErrorMessage)">
+    You can <a (click)="$event.preventDefault(); openAddForm()" href="#">add a new account</a>.
+    <span *ngIf="selectedClientIdFilter !== null"> Or change the client filter above.</span>
+  </p>
+  <p *ngIf="isLoadingClients && clientLoadErrorMessage">(Cannot add account until client list is loaded)</p>
+</div>

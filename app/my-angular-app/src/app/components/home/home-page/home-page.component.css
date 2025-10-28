@@ -1,0 +1,67 @@
+/* home.component.css */
+
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+body {
+  background-color: #f4f7fa;
+  color: #333;
+}
+
+/* Container for the page */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Header styles */
+.header {
+  background-color: #fff;
+  padding: 40px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.greeting h1 {
+  font-size: 36px;
+  color: #333;
+  margin: 20px 0;
+}
+
+.greeting p {
+  font-size: 18px;
+  color: #666;
+}
+
+/* Button to show clients */
+.action-section {
+  margin-top: 40px;
+}
+
+.btn-show-clients {
+  background-color: #4CAF50;
+  color: white;
+  padding: 15px 30px;
+  font-size: 18px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-show-clients:hover {
+  background-color: #45a049;
+}
