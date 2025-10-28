@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.1' // Или 3.2.7, или актуальную на ваш момент
+    id 'io.spring.dependency-management' version '1.1.5' // Или актуальную
+    id "jacoco"
+    id "org.sonarqube" version "6.0.1.5171" // Оставляем как есть
+}
+
+jacoco {
+    toolVersion = "0.8.11" // Оставляем как есть
+}
+sonarqube {
+    properties {
+        // Оставляем как есть
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.token", System.getenv("SONAR_TOKEN")
+        property "sonar.projectKey", "13dashaa_finance-manager"
+        property "sonar.organization", "13dashaa"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml"
+    }
+}
+
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT' // Стандартно
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21) // Оставляем как есть
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'org.webjars:bootstrap:5.3.0' // Оставляем как есть
+    implementation 'org.webjars:jquery:3.7.1'    // Оставляем как есть
+    compileOnly 'org.projectlombok:lombok'         // Оставляем как есть
+    annotationProcessor 'org.projectlombok:lombok' // Оставляем как есть
+    implementation 'org.postgresql:postgresql:42.5.4' // Оставляем как есть (можно обновить версию)
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0' // Оставляем как есть
+
+    developmentOnly 'org.springframework.boot:spring-boot-devtools' // Оставляем как есть
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2:2.2.224'
+    testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
+    testImplementation 'org.mockito:mockito-core:5.5.0' // Можно обновить Mockito
+    testImplementation 'org.mockito:mockito-junit-jupiter:5.5.0' // Можно обновить Mockito
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        csv.required = false
+        html.required = true
+    }
+}

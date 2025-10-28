@@ -1,0 +1,47 @@
+
+services:
+  - type: psql
+    name: finance-db
+    plan: free
+
+  - type: web
+    name: finance-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile.backend # Путь к Dockerfile бэкенда
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production # Активировать профиль production
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase: # Взять URL из созданной БД
+          name: finance-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: finance-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: finance-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: validate # На production лучше validate или none + миграции (Flyway/Liquibase)
+      # --- ОЧЕНЬ ВАЖНО для раздельного фронтенда ---
+      - key: CORS_ALLOWED_ORIGINS # Имя переменной зависит от вашей реализации CORS в Spring
+        value: https://finance-frontend-XXXX.onrender.com # URL вашего фронтенда на Render (уточните после деплоя фронта)
+      # Можно добавить другие переменные (секреты API и т.д.)
+
+  # Фронтенд Angular (Статический сайт)
+  - type: static # Тип сервиса - статический сайт
+    name: finance-frontend
+    plan: free # Используем бесплатный план
+    rootDir: my-angular-app # Указываем папку с Angular приложением
+    buildCommand: npm install --legacy-peer-deps && npm run build -- --configuration production # Команды для сборки Angular
+    publishDir: dist/my-angular-app/browser # Папка с результатом сборки Angular (уточните ваш путь!)
+    envVars:
+      - key: NODE_VERSION
+        value: 18 # Или ваша версия Node
+    routes:
+      - type: rewrite # Правило для поддержки Angular Router
+        source: /*
+        destination: /index.html

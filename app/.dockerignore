@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE/Build Tool files
+.idea
+.gradle
+build
+out
+target
+*.iml
+
+# Node modules (они устанавливаются внутри контейнера)
+my-angular-app/node_modules
+node_modules
+
+# Logs and temp files
+logs
+*.log
+tmp
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Docker files themselves (if needed, usually not)
+# Dockerfile*
+# docker-compose.yml
+# nginx.conf
+
+# Env files (should be passed via docker-compose environment section)
+.env
